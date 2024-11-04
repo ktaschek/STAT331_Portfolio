@@ -8,10 +8,18 @@ As we’ve said in the class efficiency is a pivotal component of statistical co
 
 -   What is the definition of “efficiency”?
 
+Efficiency is the ratio of productive work done to some metric of cost for example the ratio of output to number of lines/functions used.
+
 -   What does efficiency look like in statistical computing / data science?
 
--   What does efficiency allow you to do?
+Efficiency in the context of Stats 331 is the practice of developing code in a way that reduces redundancies and unnecessary function calls or lines of code.
 
--   Why is efficiency important?
+-   What does efficiency allow you to do? Why is efficiency important?
+
+Efficiency in code means that any viewer including the programmer themselves can digest the code in an easier to understand and more readable way in order for them to extrapolate the functionality quicker. For example code with multiple filter function calls makes it harder to interpret how data is being filtered because of the need to jump around the different code segment where as with one encapsulating filter function call, it's easier to digest. Additionally, behind the scenes the multiple filter functions are run which increases computation costs. Likewise, nested functions make it harder for a viewer to understand where as with a well named variable and the function call can make it easier to process the code. Thus efficiency makes code more digestible and faster.
 
 -   Where did you encounter efficiency, and what were some [“a-ha” moments](https://www.merriam-webster.com/dictionary/aha%20moment) you had about efficiency? (For the latter, tie each a-ha moment to an artifact in the portfolio.)
+
+Efficiency is ideally in each chunk of code we write and as a result it's invisible. On the other hand, without the presence of efficient code, it's easy to see where the faults are.
+
+I had a big "a-ha" moment in lab 3 which led to me refactoring most the code chunks. For questions that needed outputs for both the minimum and maximum of some variable in the data set, I used the `slice_min()` and `slice_max()` functions. This meant I had two code chunks to pipe into these functions that were doing the exact same process. It was inefficient and redundant. To solve this issue I could simply use the `filter()` function and remove all values that were not either the maximum or the minimum.
