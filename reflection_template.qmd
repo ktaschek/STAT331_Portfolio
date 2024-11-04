@@ -1,6 +1,6 @@
 ---
 title: "STAT 331 Portfolio"
-author: "Your Name Goes Here"
+author: "Kyle Taschek"
 format: 
   html: 
     self-contained: true
@@ -11,7 +11,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an __.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -21,29 +21,78 @@ execute:
 
 -   `csv`
 
+Lab 2 Question 1
+
 ```{r}
 #| label: wd-1-csv
+
+survey_csv <- read_csv(here::here("data","surveys.csv"), show_col_types = FALSE)
 
 ```
 
 -   `xlsx`
 
+PA 4 Question 1
+
 ```{r}
 #| label: wd-1-xlsx
+
+military <- read_xlsx(here("data", "gov_spending_per_capita.xlsx"), 
+                      sheet = "Share of Govt. spending", 
+                      skip  = 7, 
+                      n_max = 191)
 
 ```
 
 -   `txt`
 
+Check-in 2.3
+
 ```{r}
 #| label: wd-1-txt
+
+# modified to follow tidiness conventions
+
+ages_mystery <- read_delim(
+  here::here(
+    "Week 2",
+    "Check-ins",
+    "Ages_Data",
+    "ages_mystery.txt"
+    ),
+  delim = "|"
+  )
 
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
 
+Lab 3 Question 5
+
 ```{r}
 #| label: wd-2
+
+teacher_evals_clean <- teacher_evals |>
+  rename(sex = gender) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex
+         ) |>
+  mutate(
+    course_id = as.factor(course_id),
+    teacher_id = as.factor(teacher_id),
+    sex = as.factor(sex),
+    academic_degree = as.factor(academic_degree),
+    question_no = as.integer(question_no)
+  ) |>
+  filter(no_participants >= 10)
 
 ```
 
@@ -51,15 +100,67 @@ execute:
 
 -   numeric
 
+Lab 3 Question 5
+
 ```{r}
 #| label: wd-3-numeric
 
+teacher_evals_clean <- teacher_evals |>
+  rename(sex = gender) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex
+         ) |>
+  mutate(
+    course_id = as.factor(course_id),
+    teacher_id = as.factor(teacher_id),
+    sex = as.factor(sex),
+    academic_degree = as.factor(academic_degree),
+    question_no = as.integer(question_no)
+  ) |>
+  filter(no_participants >= 10)
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
 
+Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
+
 ```{r}
 #| label: wd-3-string
+
+renamed_get_fit_now_member <-get_fit_now_member |>
+      rename(membership_id = id)
+
+suspect_id <- person |>
+  inner_join(
+    renamed_get_fit_now_member,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    get_fit_now_check_in,
+    join_by(membership_id == membership_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    ymd(check_in_date) == ymd(20180109),
+    membership_status == "gold",
+    str_detect(plate_number, "H42W"),
+    str_starts(membership_id, "48Z"),
+    gender == "male"
+  ) |>
+  pull(id)
+
+suspect_id
 
 ```
 
@@ -72,9 +173,35 @@ execute:
 
 -   date (example must use functions from **lubridate**)
 
+Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
+
 ```{r}
 #| label: wd-3-date
 
+renamed_get_fit_now_member <-get_fit_now_member |>
+      rename(membership_id = id)
+
+suspect_id <- person |>
+  inner_join(
+    renamed_get_fit_now_member,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    get_fit_now_check_in,
+    join_by(membership_id == membership_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    ymd(check_in_date) == ymd(20180109),
+    membership_status == "gold",
+    str_detect(plate_number, "H42W"),
+    str_starts(membership_id, "48Z"),
+    gender == "male"
+  ) |>
+  pull(id)
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -95,15 +222,115 @@ execute:
 
 -   factor (example must use functions from **forcats**)
 
+Lab 4 Question 3
+
 ```{r}
 #| label: wd-4-factor
+
+ca_childcare <- ca_childcare |> 
+  mutate(county_name = str_remove(county_name, " County")) |>
+  mutate(region = fct_collapse(county_name,
+    "Superior California" = c(
+      "Butte",
+      "Colusa",
+      "El Dorado",
+      "Glenn",
+      "Lassen",
+      "Modoc",
+      "Nevada",
+      "Placer",
+      "Plumas",
+      "Sacramento",
+      "Shasta",
+      "Sierra",
+      "Siskiyou",
+      "Sutter",
+      "Tehama",
+      "Yolo",
+      "Yuba"
+      ),
+    "North Coast" = c(
+      "Del Norte",
+      "Humboldt",
+      "Lake",
+      "Mendocino",
+      "Napa",
+      "Sonoma",
+      "Trinity"
+      ),
+    "San Francisco Bay Area" = c(
+      "Alameda",
+      "Contra Costa",
+      "Marin",
+      "San Francisco",
+      "San Mateo",
+      "Santa Clara",
+      "Solano"
+      ),
+    "Northern San Joaquin Valley" = c(
+      "Alpine",
+      "Amador",
+      "Calaveras",
+      "Madera",
+      "Mariposa",
+      "Merced",
+      "Mono",
+      "San Joaquin",
+      "Stanislaus",
+      "Tuolumne"
+      ),
+    "Central Coast" = c(
+      "Monterey",
+      "San Benito",
+      "San Luis Obispo",
+      "Santa Barbara",
+      "Santa Cruz",
+      "Ventura"
+      ),
+    "Southern San Joaquin Valley" = c(
+      "Fresno",
+      "Inyo",
+      "Kern",
+      "Kings",
+      "Tulare"
+      ),
+    "Inland Empire" = c(
+      "Riverside",
+      "San Bernardino"
+      ),
+    "Los Angeles County" = c(
+      "Los Angeles"
+      ),
+    "Orange County" = c(
+      "Orange"
+      ),
+    "San Diego-Imperial" = c(
+      "Imperial",
+      "San Diego"
+      )
+  )) |> 
+  mutate(region = as.factor(region))
 
 ```
 
 -   date (example must use functions from **lubridate**)
 
+PA 5 Question 3
+
 ```{r}
 #| label: wd-4-date
+
+# modified to follow tidiness conventions
+
+suspects_modified <- suspects_modified |>
+  mutate(DOW = wday(
+    Time.Spotted,
+    label = TRUE,
+    abbr = FALSE
+    )) |>
+  filter(!(DOW %in% c(
+    "Tuesday", "Thursday"
+    )))
 
 ```
 
@@ -111,8 +338,35 @@ execute:
 
 -   `left_join()`
 
+Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
+
 ```{r}
 #| label: wd-5-left
+
+renamed_get_fit_now_member <-get_fit_now_member |>
+      rename(membership_id = id)
+
+suspect_id <- person |>
+  inner_join(
+    renamed_get_fit_now_member,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    get_fit_now_check_in,
+    join_by(membership_id == membership_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    ymd(check_in_date) == ymd(20180109),
+    membership_status == "gold",
+    str_detect(plate_number, "H42W"),
+    str_starts(membership_id, "48Z"),
+    gender == "male"
+  ) |>
+  pull(id)
 
 ```
 
@@ -125,8 +379,35 @@ execute:
 
 -   `inner_join()`
 
+Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
+
 ```{r}
 #| label: wd-5-inner
+
+renamed_get_fit_now_member <-get_fit_now_member |>
+      rename(membership_id = id)
+
+suspect_id <- person |>
+  inner_join(
+    renamed_get_fit_now_member,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    get_fit_now_check_in,
+    join_by(membership_id == membership_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    ymd(check_in_date) == ymd(20180109),
+    membership_status == "gold",
+    str_detect(plate_number, "H42W"),
+    str_starts(membership_id, "48Z"),
+    gender == "male"
+  ) |>
+  pull(id)
 
 ```
 
@@ -157,15 +438,77 @@ execute:
 
 -   `pivot_longer()`
 
+Lab 4 Question 6
+
 ```{r}
 #| label: wd-7-long
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(age_group = factor(age_group,
+                            levels = c("mc_infant", "mc_toddler", "mc_preschool"),
+                            labels = c("Infant", "Toddler", "Preschool"))) |>
+  # Graphing 
+  ggplot(mapping = aes(x = study_year,
+                       y = price_per_week,
+                       color = region)) +
+  geom_point(position = "jitter",
+             alpha = 0.5) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6))
+  )
 
 ```
 
 -   `pivot_wider()`
 
+Lab 4 Question 4
+
 ```{r}
 #| label: wd-7-wide
+
+# modified to follow tidiness conventions
+
+ca_childcare |>
+  filter(study_year %in% c(2008,2018)) |>
+  group_by(
+    region,
+    study_year
+    ) |>
+  summarize(median_mhi = median(mhi_2018,
+                                na.rm = TRUE)) |>
+  ungroup() |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi,
+              names_glue = "mhi_{study_year}") |>
+  arrange(desc(mhi_2018))
 
 ```
 
@@ -175,6 +518,10 @@ execute:
 
 I've done this in the following provided assignments:
 
+Labs 1-5
+
+Challenges 1-3
+
 **R-2: I can write well documented and tidy code.**
 
 -   Example of **ggplot2** plotting
@@ -182,12 +529,96 @@ I've done this in the following provided assignments:
 ```{r}
 #| label: r-2-1
 
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(age_group = factor(age_group,
+                            levels = c("mc_infant", "mc_toddler", "mc_preschool"),
+                            labels = c("Infant", "Toddler", "Preschool"))) |>
+  # Graphing 
+  ggplot(mapping = aes(x = study_year,
+                       y = price_per_week,
+                       color = region)) +
+  geom_point(position = "jitter",
+             alpha = 0.5) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6))
+  )
+
 ```
 
 -   Example of **dplyr** pipeline
 
 ```{r}
 #| label: r-2-2
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(age_group = factor(age_group,
+                            levels = c("mc_infant", "mc_toddler", "mc_preschool"),
+                            labels = c("Infant", "Toddler", "Preschool"))) |>
+  # Graphing 
+  ggplot(mapping = aes(x = study_year,
+                       y = price_per_week,
+                       color = region)) +
+  geom_point(position = "jitter",
+             alpha = 0.5) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6))
+  )
 
 ```
 
@@ -205,6 +636,8 @@ I've done this in the following provided assignments:
 ```{r}
 #| label: r-3-example
 
+
+
 ```
 
 -   Example of function stops
@@ -220,15 +653,50 @@ I've done this in the following provided assignments:
 
 -   at least two numeric variables
 
+Lab 2 Question 4
+
 ```{r}
 #| label: dvs-1-num
+
+ggplot(data = survey_csv) +
+  geom_point(mapping = aes(x = weight,
+                           y = hindfoot_length
+                           ),
+             alpha = 0.3,
+             position = "jitter") + 
+  facet_wrap(~species) +
+  labs(x = "Weight (g)",
+       y = "",
+       title = "Relationship Between Hindfoot Length and Weight Across Species in Portal, Arizona",
+       subtitle = "Hindfoot Length (mm)")
 
 ```
 
 -   at least one numeric variable and one categorical variable
 
+Lab 2 Question 16
+
 ```{r}
 #| label: dvs-2-num-cat
+
+# modified to follow tidiness conventions
+
+ggplot(data = survey_csv,
+       mapping = aes(
+         y = species,
+         x = weight
+         )) +
+  geom_jitter(
+    color = "orange3",
+    alpha = 0.7,
+    show.legend = FALSE
+    ) +
+  geom_boxplot(outlier.alpha = 0) +
+  labs(
+    x = "Weight (g)",
+    y = " ",
+    title = "Comparison of Weight Distribution Across Different Species of Rodent from Portal, Arizona"
+  )
 
 ```
 
@@ -250,8 +718,29 @@ I've done this in the following provided assignments:
 
 -   I can ensure people don't tilt their head
 
+Lab 2 Question 16
+
 ```{r}
 #| label: dvs-2-1
+
+# modified to follow tidiness conventions
+
+ggplot(data = survey_csv,
+       mapping = aes(
+         y = species,
+         x = weight
+         )) +
+  geom_jitter(
+    color = "orange3",
+    alpha = 0.7,
+    show.legend = FALSE
+    ) +
+  geom_boxplot(outlier.alpha = 0) +
+  labs(
+    x = "Weight (g)",
+    y = " ",
+    title = "Comparison of Weight Distribution Across Different Species of Rodent from Portal, Arizona"
+  )
 
 ```
 
@@ -273,8 +762,28 @@ I've done this in the following provided assignments:
 
 -   I can use non-standard colors
 
+Challenge 2 Question 2
+
 ```{r}
 #| label: dvs-3-1
+
+# modified to follow tidiness conventions
+
+ggplot(data = survey_csv) +
+  geom_density_ridges(
+    mapping = aes(
+      x = weight,
+      y = species,
+      fill = species),
+    alpha = 0.5
+    ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Species",
+    y = " ",
+    subtitle = "Weight (g)",
+    title = "Comparison of Weight Distribution Across Species from Portal, Arizona"
+  )
 
 ```
 
