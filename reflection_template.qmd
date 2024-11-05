@@ -11,7 +11,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an A.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -746,15 +746,128 @@ ggplot(data = survey_csv,
 
 -   I can modify the text in my plot to be more readable
 
+Lab 4 Question 6
+
 ```{r}
 #| label: dvs-2-2
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(age_group = factor(age_group,
+                            levels = c("mc_infant", "mc_toddler", "mc_preschool"),
+                            labels = c("Infant", "Toddler", "Preschool"))) |>
+  # Graphing 
+  ggplot(mapping = aes(x = study_year,
+                       y = price_per_week,
+                       color = region)) +
+  geom_point(position = "jitter",
+             alpha = 0.5) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6))
+  )
 
 ```
 
 -   I can reorder my legend to align with the colors in my plot
 
+Lab 4 Question 6
+
 ```{r}
 #| label: dvs-2-3
+
+# modified to relect the "growing" changes requested:
+# 1. plot color reordering,
+# 2. factor with forcats
+# 3. fix text size issues
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(
+    age_group = fct_recode(
+      age_group,
+      "Infant" = "mc_infant",
+      "Toddler" = "mc_toddler",
+      "Preschool" = "mc_preschool"
+    ),
+   age_group = fct_relevel(
+     age_group,
+     "Infant",
+     "Toddler",
+     "Preschool"
+    )
+   ) |>
+  # Graphing 
+  ggplot(mapping = aes(
+    x = study_year,
+    y = price_per_week,
+    color = fct_reorder2(
+      .f = region,
+      .x = study_year,
+      .y = price_per_week
+    )
+  )) +
+  geom_point(position = "jitter",
+             alpha = 0.5,
+             size = 0.8) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)",
+    color = "California Region"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6)),
+    plot.title = element_text(size = 12)
+  )
 
 ```
 
@@ -805,8 +918,21 @@ ggplot(data = survey_csv) +
 
 -   Example using `summarize()`
 
+Lab 4 Question 4
+
 ```{r}
 #| label: dvs-4-summarize
+
+ca_childcare |>
+  filter(study_year %in% c(2008,2018)) |>
+  group_by(region, study_year) |>
+  summarize(median_mhi = median(mhi_2018,
+                                na.rm = TRUE)) |>
+  ungroup() |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi,
+              names_glue = "mhi_{study_year}") |>
+  arrange(desc(mhi_2018))
 
 ```
 
@@ -824,6 +950,8 @@ ggplot(data = survey_csv) +
 ```{r}
 #| label: dvs-5-1
 
+
+
 ```
 
 -   Example 2
@@ -831,21 +959,42 @@ ggplot(data = survey_csv) +
 ```{r}
 #| label: dvs-5-2
 
+# modified name to be unique_techer_courses (from teacher_course)
+
+
+
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
 
 -   Example 1
 
+lab 3 Question 6
+
 ```{r}
 #| label: dvs-6-1
+
+
+teacher_evals_clean |>
+  summarise(unique_teachers = n_distinct(teacher_id),
+            unique_courses = n_distinct(course_id),
+            unique_combinations = n_distinct(course_id,teacher_id))
 
 ```
 
 -   Example 2
 
+lab 3 Question 9
+
 ```{r}
 #| label: dvs-6-2
+
+teacher_evals_clean |>
+  group_by(course_id, teacher_id) |>
+  summarise(question_count = n_distinct(question_no), .groups = "drop") |>
+  filter(question_count == 9) |>
+  count() |>
+  rename(unique_teacher_course = n)
 
 ```
 
@@ -855,6 +1004,8 @@ ggplot(data = survey_csv) +
 
 ```{r}
 #| label: dvs-7-1
+
+
 
 ```
 
@@ -871,8 +1022,37 @@ ggplot(data = survey_csv) +
 
 -   using a single function call with multiple inputs (rather than multiple function calls)
 
+Lab 5 (Find who hired the suspect step)
+
 ```{r}
 #| label: pe-1-one-call
+
+# Exemplified by filter function
+
+employer_id <- person |>
+  inner_join(
+    facebook_event_checkin,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    gender == "female",
+    height %in% c(65:67),
+    hair_color == "red",
+    car_make == "Tesla",
+    car_model == "Model S",
+    event_name == "SQL Symphony Concert",
+    month(ymd(date)) == 12,
+    year(ymd(date)) == 2017
+  ) |>
+  group_by(id) |>
+  summarize(concert_count = n()) |>
+  filter(concert_count == 3) |>
+  pull(id)
+
 
 ```
 
@@ -933,15 +1113,93 @@ ggplot(data = survey_csv) +
 
 -   I can use functions which are not superseded or deprecated
 
+Challenge 3 Question 3
+
 ```{r}
 #| label: pe-4-1
+
+tab <- table(
+  teacher_evals_compare$SET_level,
+  teacher_evals_compare$sen_level
+)
+
+chisq.test(tab)
 
 ```
 
 -   I can connect a data wrangling pipeline into a `ggplot()`
 
+Lab 4 Question 6
+
 ```{r}
 #| label: pe-4-2
+
+# modified to relect the "growing" changes requested:
+# 1. plot color reordering,
+# 2. factor with forcats
+# 3. fix text size issues
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(
+    age_group = fct_recode(
+      age_group,
+      "Infant" = "mc_infant",
+      "Toddler" = "mc_toddler",
+      "Preschool" = "mc_preschool"
+    ),
+   age_group = fct_relevel(
+     age_group,
+     "Infant",
+     "Toddler",
+     "Preschool"
+    )
+   ) |>
+  # Graphing 
+  ggplot(mapping = aes(
+    x = study_year,
+    y = price_per_week,
+    color = fct_reorder2(
+      .f = region,
+      .x = study_year,
+      .y = price_per_week
+    )
+  )) +
+  geom_point(position = "jitter",
+             alpha = 0.5,
+             size = 0.8) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)",
+    color = "California Region"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6)),
+    plot.title = element_text(size = 12)
+  )
 
 ```
 
@@ -967,15 +1225,28 @@ ggplot(data = survey_csv) +
 
 -   Example 1
 
+Lab 2 Question 17
+
 ```{r}
 #| label: dsm-2-1
+
+species_mod <- aov(weight ~ species, data = survey_csv)
 
 ```
 
 -   Example 2
 
+Challenge 3 Question 3
+
 ```{r}
 #| label: dsm-2-2
+
+tab <- table(
+  teacher_evals_compare$SET_level,
+  teacher_evals_compare$sen_level
+)
+
+chisq.test(tab)
 
 ```
 
