@@ -166,51 +166,48 @@ suspect_id
 
 -   factor
 
+Lab 4 Question 2
+
 ```{r}
 #| label: wd-3-factor
+
+ca_childcare <- childcare_costs |>
+  left_join(
+    y = counties,
+    by = join_by(county_fips_code == county_fips_code)
+  ) |>
+  filter(state_name == "California")
+
+ca_childcare
 
 ```
 
 -   date (example must use functions from **lubridate**)
 
-Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
-
 ```{r}
 #| label: wd-3-date
 
-renamed_get_fit_now_member <-get_fit_now_member |>
-      rename(membership_id = id)
 
-suspect_id <- person |>
-  inner_join(
-    renamed_get_fit_now_member,
-    join_by(id == person_id)
-  ) |>
-  left_join(
-    get_fit_now_check_in,
-    join_by(membership_id == membership_id)
-  ) |>
-  left_join(
-    drivers_license,
-    join_by(license_id == id)
-  ) |>
-  filter(
-    ymd(check_in_date) == ymd(20180109),
-    membership_status == "gold",
-    str_detect(plate_number, "H42W"),
-    str_starts(membership_id, "48Z"),
-    gender == "male"
-  ) |>
-  pull(id)
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   numeric (using `as.numeric()` is not sufficient)
 
+Challenge 3 Q2
+
 ```{r}
 #| label: wd-4-numeric
 
+teacher_evals_compare <- teacher_evals |>
+  filter(question_no == 903) |>
+  mutate(SET_level = if_else(SET_score_avg >= 4, "excellent", "standard"),
+         sen_level = if_else(seniority <=4, "junior", "senior")) |>
+  select(
+    course_id,
+    SET_level,
+    sen_level
+  )
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
@@ -372,8 +369,21 @@ suspect_id <- person |>
 
 -   `right_join()`
 
+Lab 4 Question 2
+
 ```{r}
 #| label: wd-5-right
+
+# modified from lab 4 to to satisfy requirement
+
+ca_childcare <- counties |>
+  right_join(
+    y = childcare_costs,
+    by = join_by(county_fips_code == county_fips_code)
+  ) |>
+  filter(state_name == "California")
+
+ca_childcare
 
 ```
 
@@ -408,13 +418,6 @@ suspect_id <- person |>
     gender == "male"
   ) |>
   pull(id)
-
-```
-
--   `full_join()`
-
-```{r}
-#| label: wd-5-full
 
 ```
 
@@ -512,19 +515,23 @@ ca_childcare |>
 
 ```
 
-## Reproducibility
+## Reproducibility:
 
 **R-1: I can create professional looking, reproducible analyses using RStudio projects, Quarto documents, and the here package.**
 
 I've done this in the following provided assignments:
 
-Labs 1-5
+Labs 1-5:
 
-Challenges 1-3
+Challenges 1-3:
+
+In these examples, I demonstrate consistent styling, suppression of unnecessary messages and warnings, as well as prevention of errors.
 
 **R-2: I can write well documented and tidy code.**
 
 -   Example of **ggplot2** plotting
+
+Lab 4 Question 6
 
 ```{r}
 #| label: r-2-1
@@ -575,6 +582,8 @@ ca_childcare |>
 
 -   Example of **dplyr** pipeline
 
+Lab 4 Question 6
+
 ```{r}
 #| label: r-2-2
 
@@ -624,8 +633,34 @@ ca_childcare |>
 
 -   Example of function formatting
 
+Lab 7 Question 8
+
 ```{r}
 #| label: r-2-3
+
+# modified to resolve the "growing" changes requested:
+# 1. use {{}} operator
+# 2. validate columns are in the dataframe
+
+rescale_column <- function(df, columns) {
+  # validate df is a dataframe
+  if (!is.data.frame(df)) {
+    stop("The input `df` must be a data frame.")
+  }
+  # validate columns selected are in dataframe
+  if (!all(columns %in% colnames(df))) {
+    stop("`columns` must be a character vector of valid column names in `df`.")
+  }
+  # add rescaled columns value
+  return(df |>
+    mutate(across(
+      {{columns}},
+      rescale_01,
+      .names = "{.col}_rescaled"
+      )
+    ))
+}
+
 
 ```
 
@@ -633,17 +668,42 @@ ca_childcare |>
 
 -   Example -- any context
 
+Lab 4 Question 5
+
 ```{r}
 #| label: r-3-example
 
+# robust and resistant to change:
+# 1. returns 2018's minimum median even if there are changes in the data set
+# 2. slice_min effectively combines the functionality of arrange descending and         picking the top value using slice_head which reduces user input error.
 
+ca_childcare |>
+  group_by(region) |>
+  filter(study_year == 2018) |>
+  summarize(median_price = median(mc_infant,
+                               na.rm = TRUE)) |>
+  slice_min(median_price)
 
 ```
 
 -   Example of function stops
 
+Lab 7 Question 4
+
 ```{r}
 #| label: r-3-function-stops
+
+rescale_01 <- function(vector){
+  if (!is.numeric(vector)) {
+    stop("Error: The input vector must be numeric.")
+  }
+  if (length(vector) <= 1) {
+    stop("Error: The input vector must have more than one element.")
+  }
+  min_max <- range(vector, na.rm = TRUE)
+  
+  return((vector - min_max[1]) / (min_max[2] - min_max[1]))
+}
 
 ```
 
@@ -702,15 +762,74 @@ ggplot(data = survey_csv,
 
 -   at least two categorical variables
 
+Lab 3 Challenge 2
+
 ```{r}
 #| label: dvs-2-cat
+
+ggplot(data = teacher_evals_compare,
+       mapping = aes(x = sen_level,
+                     fill = SET_level)) +
+  geom_bar(position = "stack") +
+  labs(
+    x = "Seniority of Instructor",
+    y = " ",
+    subtitle = " Number of Sections",
+    legend = "Rating",
+    fill = "SET level",
+  ) +
+  scale_fill_manual(values = c("steelblue","darkgoldenrod3"))
 
 ```
 
 -   dates (timeseries plot)
 
+Lab 4 Question 6
+
 ```{r}
 #| label: dvs-2-date
+
+ca_childcare |>
+  # Data cleaning
+  filter(!is.na(mc_infant),
+         !is.na(mc_toddler),
+         !is.na(mc_preschool)) |>
+  pivot_longer(cols = c(mc_infant,
+                        mc_toddler,
+                        mc_preschool),
+               names_to = "age_group",
+               values_to = "price_per_week") |>
+  mutate(age_group = factor(age_group,
+                            levels = c("mc_infant", "mc_toddler", "mc_preschool"),
+                            labels = c("Infant", "Toddler", "Preschool"))) |>
+  # Graphing 
+  ggplot(mapping = aes(x = study_year,
+                       y = price_per_week,
+                       color = region)) +
+  geom_point(position = "jitter",
+             alpha = 0.5) +
+  geom_smooth(method = "loess",
+              alpha = 0.5) +
+  facet_wrap(~ age_group) +
+  labs(
+    x = "Study Year",
+    y = " ",
+    title = "Weekly Median Price for Center-Based Children ($)"
+  ) + 
+  scale_x_continuous(breaks = seq(2008,
+                                  2018,
+                                  by = 2)) +
+  scale_y_continuous(limits = c(100, 500),
+                     labels = label_currency(prefix = "$", # adding $ to y-axis labels
+                                             accuracy = 1)) +
+  # Courtesy of GPT: https://chatgpt.com/share/67144915-af68-8009-9a21-ee75e0fbca42
+  theme(
+    strip.background = element_rect(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA),
+    aspect.ratio = 1.1,
+    axis.text = element_text(size = 6),
+    legend.text = element_text((size = 6))
+  )
 
 ```
 
@@ -802,7 +921,7 @@ Lab 4 Question 6
 ```{r}
 #| label: dvs-2-3
 
-# modified to relect the "growing" changes requested:
+# modified to resolve the "growing" changes requested:
 # 1. plot color reordering,
 # 2. factor with forcats
 # 3. fix text size issues
@@ -902,8 +1021,53 @@ ggplot(data = survey_csv) +
 
 -   I can use annotations
 
+Lab 7 Question 2
+
 ```{r}
 #| label: dvs-3-2
+
+# modified to resolve the "growing" changes requested:
+# 1. plot readability
+# 2. Trip variable recoding
+# 3. make labels easier to read
+
+# Additionally modified to better fit DVS-3 requirements
+
+fish_csv |>
+  mutate(
+    trip = fct_recode(as.factor(trip),
+      "Trip 1" = "1",
+      "Trip 2" = "2"
+    )
+  ) |>
+  filter(
+    if_any(everything(), is.na)
+  ) |>
+  ggplot(
+    mapping = aes(
+      x = year,
+      fill = section
+    )
+  ) +
+  geom_bar(
+    stat = "count",
+    position = "stack"
+  ) +
+  facet_wrap(~ trip) +
+  labs(
+    x = "Year",
+    y = "",
+    subtitle = "Section",
+    # reference for str_wrap: https://www.rdocumentation.org/packages/stringr/versions/1.4.0/topics/str_wrap
+    title = str_wrap("Number of Missing Values by Section and Trip Over Time from the Blackfoot Trout Data Gathered at Helena, Montana"),
+    fill = "Number Missing"
+
+  ) +
+  theme(
+    axis.text.x = element_text(
+      size = 8
+    ))
+
 
 ```
 
@@ -918,10 +1082,53 @@ ggplot(data = survey_csv) +
 
 -   Example using `summarize()`
 
-Lab 4 Question 4
+Lab 7 Question 1
 
 ```{r}
 #| label: dvs-4-summarize
+
+# modified to resolve the "growing" changes requested:
+# 1. modified to output a table where each column has the number of missing values
+
+fish_csv |>
+  summarise(
+    across(
+      everything(),
+      ~ sum(is.na(.))
+    )
+  ) 
+
+```
+
+-   Example using `across()`
+
+Lab 7 Question 1
+
+```{r}
+#| label: dvs-4-across
+
+# modified to resolve the "growing" changes requested:
+# 1. modified to output a table where each column has the number of missing values
+
+fish_csv |>
+  summarise(
+    across(
+      everything(),
+      ~ sum(is.na(.))
+    )
+  ) 
+
+```
+
+**DVS-5: I can find summaries of variables across multiple groups.**
+
+-   Example 1
+
+Lab 4 Question 4
+
+```{r}
+#| label: dvs-5-1
+
 
 ca_childcare |>
   filter(study_year %in% c(2008,2018)) |>
@@ -933,24 +1140,6 @@ ca_childcare |>
               values_from = median_mhi,
               names_glue = "mhi_{study_year}") |>
   arrange(desc(mhi_2018))
-
-```
-
--   Example using `across()`
-
-```{r}
-#| label: dvs-4-across
-
-```
-
-**DVS-5: I can find summaries of variables across multiple groups.**
-
--   Example 1
-
-```{r}
-#| label: dvs-5-1
-
-
 
 ```
 
@@ -1074,24 +1263,75 @@ employer_id <- person |>
 
 -   Function that operates on vectors
 
+Lab 7 Question 4
+
 ```{r}
 #| label: pe-2-1
+
+rescale_01 <- function(vector){
+  if (!is.numeric(vector)) {
+    stop("Error: The input vector must be numeric.")
+  }
+  if (length(vector) <= 1) {
+    stop("Error: The input vector must have more than one element.")
+  }
+  min_max <- range(vector, na.rm = TRUE)
+  
+  return((vector - min_max[1]) / (min_max[2] - min_max[1]))
+}
 
 ```
 
 -   Function that operates on data frames
 
+Lab 7 Question 8
+
 ```{r}
 #| label: pe-2-2
 
+# modified to resolve the "growing" changes requested:
+# 1. use {{}} operator
+# 2. validate columns are in the dataframe
+
+rescale_column <- function(df, columns) {
+  # validate df is a dataframe
+  if (!is.data.frame(df)) {
+    stop("The input `df` must be a data frame.")
+  }
+  # validate columns selected are in dataframe
+  if (!all(columns %in% colnames(df))) {
+    stop("`columns` must be a character vector of valid column names in `df`.")
+  }
+  # add rescaled columns value
+  return(df |>
+    mutate(across(
+      {{columns}},
+      rescale_01,
+      .names = "{.col}_rescaled"
+      )
+    ))
+}
 ```
 
 **PE-3:I can use iteration to reduce repetition in my code.**
 
 -   `across()`
 
+Lab 7 Question 1
+
 ```{r}
 #| label: pe-3-across
+
+# modified to resolve the "growing" changes requested:
+# 1. modified to output a table where each column has the number of missing values
+
+fish_csv |>
+  summarise(
+    across(
+      everything(),
+      ~ sum(is.na(.))
+    )
+  ) 
 
 ```
 
@@ -1113,17 +1353,52 @@ employer_id <- person |>
 
 -   I can use functions which are not superseded or deprecated
 
-Challenge 3 Question 3
+Lab 7 Question 2
 
 ```{r}
 #| label: pe-4-1
 
-tab <- table(
-  teacher_evals_compare$SET_level,
-  teacher_evals_compare$sen_level
-)
+# modified to resolve the "growing" changes requested:
+# 1. plot readability
+# 2. Trip variable recoding
+# 3. make labels easier to read
 
-chisq.test(tab)
+# Additionally modified to better fit DVS-3 requirements
+
+fish_csv |>
+  mutate(
+    trip = fct_recode(as.factor(trip),
+      "Trip 1" = "1",
+      "Trip 2" = "2"
+    )
+  ) |>
+  filter(
+    if_any(everything(), is.na)
+  ) |>
+  ggplot(
+    mapping = aes(
+      x = year,
+      fill = section
+    )
+  ) +
+  geom_bar(
+    stat = "count",
+    position = "stack"
+  ) +
+  facet_wrap(~ trip) +
+  labs(
+    x = "Year",
+    y = "",
+    subtitle = "Section",
+    # reference for str_wrap: https://www.rdocumentation.org/packages/stringr/versions/1.4.0/topics/str_wrap
+    title = str_wrap("Number of Missing Values by Section and Trip Over Time from the Blackfoot Trout Data Gathered at Helena, Montana"),
+    fill = "Number Missing"
+
+  ) +
+  theme(
+    axis.text.x = element_text(
+      size = 8
+    ))
 
 ```
 
