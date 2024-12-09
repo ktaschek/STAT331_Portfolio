@@ -6,16 +6,24 @@ editor: visual
 
 **Answer each of the following questions with *one sentence* including a brief explanation.**
 
-1. Finish the sentence with another student’s name: "If [Name of Student] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
+1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
 
+    If Ryan doesn’t earn an A, then nobody should, because Ryan was an excellent practice activity partner He demonstrated strong communication skills and bright ideas that I was often able to learn from.
 
-2. What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
+<!-- -->
 
+1.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
 
-3. What was the easiest part of the class for you? Explain why.
+    The most difficult part of class was learning through preclass activities and challenge activities, specifically in researching function usage ourselves. Most classes train students to listen to a teacher for how things work, but this was change that took adjustment to embrace.
 
+2.  What was the easiest part of the class for you? Explain why.
 
-4. What part of the class surprised or interested you the most? Explain why.
+    The easiest part of the class was finding the resources I needed through the course website and provided materials. I was grateful that there was easy access to lecture material, extended learning material and practice activity material which all made learning easier.
 
+3.  What part of the class surprised or interested you the most? Explain why.
 
-5. Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+    Making graphics, plots, and tables in creative way was the most interesting. The class had a heavy emphasis on creative displays that make it easier for people to read and understand. I think education should not be locked behind complex academic language or difficult to comprehend data, so this aligned with my values. Additionally, I simply like making visuals.
+
+4.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+
+    The best piece of advice I can give is to always reflect on feedback whether that be from Dr. T, a peer review or a practice activity partner. You will continue to hone skills to become professional and you will continue to expand your understanding.

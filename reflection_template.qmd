@@ -50,7 +50,7 @@ Check-in 2.3
 
 ```{r}
 #| label: wd-1-txt
-
+# REVISIONS:
 # modified to follow tidiness conventions
 
 ages_mystery <- read_delim(
@@ -184,9 +184,39 @@ ca_childcare
 
 -   date (example must use functions from **lubridate**)
 
+Lab 5 (My step 5: Find who hired the suspect)
+
 ```{r}
 #| label: wd-3-date
 
+# REVISIONS:
+# modified to meet efficiency conventions
+
+employer_id <- person |>
+  inner_join(
+    facebook_event_checkin,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    gender == "female",
+    height %in% 65:67,
+    hair_color == "red",
+    car_make == "Tesla",
+    car_model == "Model S",
+    event_name == "SQL Symphony Concert",
+    month(ymd(date)) == 12,
+    year(ymd(date)) == 2017
+  ) |>
+  group_by(id) |>
+  summarize(concert_count = n()) |>
+  filter(concert_count == 3) |>
+  pull(id)
+
+employer_id
 
 ```
 
@@ -212,8 +242,37 @@ teacher_evals_compare <- teacher_evals |>
 
 -   character -- specifically a string (example must use functions from **stringr**)
 
+Lab 5 (Find witnesses)
+
 ```{r}
 #| label: wd-4-string
+
+# REVISION:
+# mutated person dataframe to stop abbreviating Drive and Avenue
+
+# Finding id of witness 1 given the crime description
+
+person <- person |>
+  mutate(
+    address_street_name = str_replace(address_street_name, 'Dr$', 'Drive'),
+    address_street_name = str_replace(address_street_name, 'Ave$', 'Avenue'),
+  ) 
+
+person |>
+  filter(
+    address_street_name == "Northwestern Drive",
+  ) |>
+  slice_max(address_number) |>
+  pull(id)
+
+# Finding id of witness 2 given the crime description
+person |>
+  filter(
+    str_detect(name, "Annabel"),
+    address_street_name == "Franklin Avenue"
+  ) |>
+  pull(id)
+
 
 ```
 
@@ -312,22 +371,39 @@ ca_childcare <- ca_childcare |>
 
 -   date (example must use functions from **lubridate**)
 
-PA 5 Question 3
+Lab 5 (find who hired suspect step)
 
 ```{r}
 #| label: wd-4-date
 
-# modified to follow tidiness conventions
+# REVISIONS:
+# modified to meet efficiency conventions
 
-suspects_modified <- suspects_modified |>
-  mutate(DOW = wday(
-    Time.Spotted,
-    label = TRUE,
-    abbr = FALSE
-    )) |>
-  filter(!(DOW %in% c(
-    "Tuesday", "Thursday"
-    )))
+# Exemplified by filter function
+
+employer_id <- person |>
+  inner_join(
+    facebook_event_checkin,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  filter(
+    gender == "female",
+    height %in% 65:67,
+    hair_color == "red",
+    car_make == "Tesla",
+    car_model == "Model S",
+    event_name == "SQL Symphony Concert",
+    month(ymd(date)) == 12,
+    year(ymd(date)) == 2017
+  ) |>
+  group_by(id) |>
+  summarize(concert_count = n()) |>
+  filter(concert_count == 3) |>
+  pull(id)
 
 ```
 
@@ -374,6 +450,7 @@ Lab 4 Question 2
 ```{r}
 #| label: wd-5-right
 
+# REVISIONS:
 # modified from lab 4 to to satisfy requirement
 
 ca_childcare <- counties |>
@@ -425,15 +502,72 @@ suspect_id <- person |>
 
 -   `semi_join()`
 
+Lab 5 Question 1 (My step 3: 'Find suspect using the given hints from the transcript")
+
 ```{r}
 #| label: wd-6-semi
+
+# REVISIONS:
+# modified to better match requirements
+# replaced height = c(65:67) filter condition with semi_join function
+
+suspect_heights <- tibble(
+  height = 65:67
+)
+employer_id <- person |>
+  inner_join(
+    facebook_event_checkin,
+    join_by(id == person_id)
+  ) |>
+  left_join(
+    drivers_license,
+    join_by(license_id == id)
+  ) |>
+  semi_join(
+    suspect_heights,
+    by = "height"
+  ) |>
+  filter(
+    gender == "female",
+    hair_color == "red",
+    car_make == "Tesla",
+    car_model == "Model S",
+    event_name == "SQL Symphony Concert",
+    month(ymd(date)) == 12,
+    year(ymd(date)) == 2017
+  ) |>
+  group_by(id) |>
+  summarize(concert_count = n()) |>
+  filter(concert_count == 3) |>
+  pull(id)
+
+employer_id
 
 ```
 
 -   `anti_join()`
 
+Lab 3 Question 10
+
 ```{r}
 #| label: wd-6-anti
+
+# REVISIONS:
+# modified to better match requirements
+# replace filter(question_no == 901) with anti_join function
+
+excluded_questions <- tibble(
+  question_no = 902:909
+)
+teacher_evals_clean |>
+  group_by(teacher_id) |>
+  anti_join(
+    excluded_questions,
+    by = "question_no"
+  ) |>
+  summarize(avg_q1_score = mean(SET_score_avg), .groups="drop") |>
+  filter(avg_q1_score == min(avg_q1_score) |
+            avg_q1_score == max(avg_q1_score))
 
 ```
 
@@ -497,6 +631,7 @@ Lab 4 Question 4
 ```{r}
 #| label: wd-7-wide
 
+# REVISIONS:
 # modified to follow tidiness conventions
 
 ca_childcare |>
@@ -638,6 +773,7 @@ Lab 7 Question 8
 ```{r}
 #| label: r-2-3
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. use {{}} operator
 # 2. validate columns are in the dataframe
@@ -673,6 +809,7 @@ Lab 4 Question 5
 ```{r}
 #| label: r-3-example
 
+# REVISIONS:
 # robust and resistant to change:
 # 1. returns 2018's minimum median even if there are changes in the data set
 # 2. slice_min effectively combines the functionality of arrange descending and         picking the top value using slice_head which reduces user input error.
@@ -842,6 +979,7 @@ Lab 2 Question 16
 ```{r}
 #| label: dvs-2-1
 
+# REVISIONS:
 # modified to follow tidiness conventions
 
 ggplot(data = survey_csv,
@@ -921,6 +1059,7 @@ Lab 4 Question 6
 ```{r}
 #| label: dvs-2-3
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. plot color reordering,
 # 2. factor with forcats
@@ -999,6 +1138,7 @@ Challenge 2 Question 2
 ```{r}
 #| label: dvs-3-1
 
+# REVISIONS:
 # modified to follow tidiness conventions
 
 ggplot(data = survey_csv) +
@@ -1026,6 +1166,7 @@ Lab 7 Question 2
 ```{r}
 #| label: dvs-3-2
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. plot readability
 # 2. Trip variable recoding
@@ -1076,6 +1217,58 @@ fish_csv |>
 ```{r}
 #| label: dvs-3-3
 
+# REVISION:
+# modified to match text color to plot for style and move legend to the bottom to make reading and comparing the trips easier.
+
+fish_csv |>
+  mutate(
+    trip = fct_recode(as.factor(trip),
+      "Trip 1" = "1",
+      "Trip 2" = "2"
+    )
+  ) |>
+  filter(
+    if_any(everything(), is.na)
+  ) |>
+  ggplot(
+    mapping = aes(
+      x = year,
+      fill = section
+    )
+  ) +
+  geom_bar(
+    stat = "count",
+    position = "stack"
+  ) +
+  facet_wrap(~ trip) +
+  labs(
+    x = "Year",
+    y = "",
+    subtitle = "Section",
+    # reference for str_wrap: https://www.rdocumentation.org/packages/stringr/versions/1.4.0/topics/str_wrap
+    title = str_wrap("Number of Missing Values by Section and Trip Over Time from the Blackfoot Trout Data Gathered at Helena, Montana"),
+    fill = "Number Missing"
+
+  ) +
+  theme(
+    axis.text.x = element_text(
+      size = 8
+    ),
+    plot.title = element_text(
+      size = 12,
+      face = "bold",
+      color = "salmon"
+    ),
+    strip.text = element_text(
+      size = 12,
+      face = "bold",
+      color = "salmon"
+    ),
+    legend.position = "bottom",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)
+    )
+
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -1087,6 +1280,7 @@ Lab 7 Question 1
 ```{r}
 #| label: dvs-4-summarize
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. modified to output a table where each column has the number of missing values
 
@@ -1107,6 +1301,7 @@ Lab 7 Question 1
 ```{r}
 #| label: dvs-4-across
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. modified to output a table where each column has the number of missing values
 
@@ -1145,12 +1340,20 @@ ca_childcare |>
 
 -   Example 2
 
+Lab 3 Question 9
+
 ```{r}
 #| label: dvs-5-2
 
-# modified name to be unique_techer_courses (from teacher_course)
+# REVISIONS:
+# modified name to be unique_teacher_courses (from teacher_course)
 
-
+teacher_evals_clean |>
+  group_by(course_id, teacher_id) |>
+  summarise(question_count = n_distinct(question_no), .groups = "drop") |>
+  filter(question_count == 9) |>
+  count() |>
+  rename(unique_teacher_course = n)
 
 ```
 
@@ -1178,6 +1381,9 @@ lab 3 Question 9
 ```{r}
 #| label: dvs-6-2
 
+# REVISIONS:
+# modified name to be unique_teacher_courses (from teacher_course)
+
 teacher_evals_clean |>
   group_by(course_id, teacher_id) |>
   summarise(question_count = n_distinct(question_no), .groups = "drop") |>
@@ -1194,14 +1400,77 @@ teacher_evals_clean |>
 ```{r}
 #| label: dvs-7-1
 
+# REVISIONS:
+# modified to resolve the "growing" changes requested:
+# 1. better column names
+
+# modified to follow tidiness conventions
+# modified to better denmonstrate requirement
+
+tibble(
+  Variable = names(fish),
+  Missing_Value_Count = map_int(
+    fish,
+    ~ sum(is.na(.))
+  )
+) |>
+# referenced: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html#Column__Row_Specification
+kable(
+  caption = "Missing data summary of blackfoot fish data set"
+) |>
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+kable_classic(full_width = F) |>
+column_spec(1, bold = TRUE, border_right = TRUE)
+
 
 
 ```
 
 -   Example 2
 
+Lab 4 Question 4
+
 ```{r}
 #| label: dvs-7-2
+
+# REVISIONS:
+# modified to better denmonstrate requirement
+
+
+mhi_data <- ca_childcare |>
+  filter(study_year %in% c(2008,2018)) |>
+  group_by(region, study_year) |>
+  summarize(
+    median_mhi = median(mhi_2018,
+                                na.rm = TRUE),
+    .groups = "drop"
+    ) |>
+  ungroup() |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi,
+              names_glue = "median_income_{study_year}") |>
+  arrange(desc(median_income_2018))
+
+
+mhi_data |>
+  kable(
+    caption = "Median household incomes by California region in descending order based on 2018"
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  column_spec(1, bold = TRUE, border_right = TRUE) |>
+  column_spec(2,
+              background = if_else(
+                mhi_data$median_income_2008  > mean(mhi_data$median_income_2008),
+                "darkgreen",
+                "darkred"
+              ))|>
+  column_spec(3,
+              background = if_else(
+                mhi_data$median_income_2018  > mean(mhi_data$median_income_2018),
+                "darkgreen",
+                "darkred"
+              ))
+  
 
 ```
 
@@ -1216,6 +1485,9 @@ Lab 5 (Find who hired the suspect step)
 ```{r}
 #| label: pe-1-one-call
 
+# REVISIONS:
+# modified to meet efficiency conventions
+
 # Exemplified by filter function
 
 employer_id <- person |>
@@ -1229,7 +1501,7 @@ employer_id <- person |>
   ) |>
   filter(
     gender == "female",
-    height %in% c(65:67),
+    height %in% 65:67,
     hair_color == "red",
     car_make == "Tesla",
     car_model == "Model S",
@@ -1247,15 +1519,48 @@ employer_id <- person |>
 
 -   `across()`
 
+Lab 7 Question 1
+
 ```{r}
 #| label: pe-1-across
+
+# REVISIONS:
+# modified to resolve the "growing" changes requested:
+# 1. modified to output a table where each column has the number of missing values
+
+fish_csv |>
+  summarise(
+    across(
+      everything(),
+      ~ sum(is.na(.))
+    )
+  ) 
+
 
 ```
 
 -   `map()` functions
 
+Lab 8 Question 4
+
 ```{r}
 #| label: pe-1-map-1
+
+# REVISIONS:
+# modified to resolve the "growing" changes requested:
+# 1. better column names
+
+# modified to follow tidiness conventions
+
+tibble(
+  Variable = names(fish),
+  Missing_Value_Count = map_int(
+    fish,
+    ~ sum(is.na(.))
+  )) |>
+kable() |>
+kable_styling() |>
+row_spec(1)
 
 ```
 
@@ -1289,6 +1594,7 @@ Lab 7 Question 8
 ```{r}
 #| label: pe-2-2
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. use {{}} operator
 # 2. validate columns are in the dataframe
@@ -1322,6 +1628,7 @@ Lab 7 Question 1
 ```{r}
 #| label: pe-3-across
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. modified to output a table where each column has the number of missing values
 
@@ -1337,8 +1644,26 @@ fish_csv |>
 
 -   `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
 
+Lab 8 Question 4
+
 ```{r}
 #| label: pe-3-map-1
+
+# REVISIONS:
+# modified to resolve the "growing" changes requested:
+# 1. better column names
+
+# modified to follow tidiness conventions
+
+tibble(
+  Variable = names(fish),
+  Missing_Value_Count = map_int(
+    fish,
+    ~ sum(is.na(.))
+  )) |>
+kable() |>
+kable_styling() |>
+row_spec(1)
 
 ```
 
@@ -1346,6 +1671,8 @@ fish_csv |>
 
 ```{r}
 #| label: pe-3-map-2
+
+
 
 ```
 
@@ -1358,6 +1685,7 @@ Lab 7 Question 2
 ```{r}
 #| label: pe-4-1
 
+# REVISIONS:
 # modified to resolve the "growing" changes requested:
 # 1. plot readability
 # 2. Trip variable recoding
@@ -1409,6 +1737,7 @@ Lab 4 Question 6
 ```{r}
 #| label: pe-4-2
 
+# REVISIONS:
 # modified to relect the "growing" changes requested:
 # 1. plot color reordering,
 # 2. factor with forcats
@@ -1484,8 +1813,40 @@ ca_childcare |>
 
 -   Example 1
 
+Lab 2 Question 8
+
 ```{r}
 #| label: dsm-1-1
+
+# REVISIONS:
+# modified code to better fit requirements:
+# 1. collected mean and sd of original data
+# 2. simulated based on those stats in a normally distributed set of points
+
+set.seed(93401)
+
+survey_csv |>
+  group_by(species) |>
+  summarise(mean_weight = mean(weight),
+            # reference: https://www.digitalocean.com/community/tutorials/find-standard-deviation-in-r
+            sd_weight = sd(weight)) |>
+  # reference: https://dplyr.tidyverse.org/articles/rowwise.html
+  rowwise() |>
+  mutate(simulated_weights = list(rnorm(1000, mean = mean_weight, sd = sd_weight))) |>
+  unnest(simulated_weights) |>
+  ggplot(mapping = aes(x = species, y = simulated_weights)) +
+  geom_jitter(color = "orange3",
+              alpha = 0.7,
+              show.legend = FALSE) +
+  geom_boxplot(outlier.alpha = 0) +
+  # reference: https://chatgpt.com/share/6701f393-3234-8009-bc09-a0e39637ee14
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(
+    x = "Species",
+    y = " ",
+    subtitle = "Weight (g)",
+    title = "Comparison of Weight Distribution Across Different Species of Rodent from Portal, Arizona"
+  )
 
 ```
 
@@ -1493,6 +1854,42 @@ ca_childcare |>
 
 ```{r}
 #| label: dsm-1-2
+
+# NEW:
+# created own example based on the lab 3 teacher_evals data set
+# Simulate teacher evaluation data
+
+# Get  stats on numeric values
+teacher_evals_clean |>
+  summarise(
+      min_teacher_id = min(as.numeric(teacher_id), na.rm = TRUE),
+      max_teacher_id = max(as.numeric(teacher_id), na.rm = TRUE),
+      min_participants = min(no_participants, na.rm = TRUE),
+      max_participants = max(no_participants, na.rm = TRUE),
+      mean_participants = mean(no_participants, na.rm = TRUE),
+      sd_participants = sd(no_participants, na.rm = TRUE),
+      min_resp_share = min(resp_share, na.rm = TRUE),
+      max_resp_share = max(resp_share, na.rm = TRUE),
+      mean_resp_share = mean(resp_share, na.rm = TRUE),
+      sd_resp_share = sd(resp_share, na.rm = TRUE),
+      min_SET_score_avg = min(SET_score_avg, na.rm = TRUE),
+      max_SET_score_avg = max(SET_score_avg, na.rm = TRUE),
+      mean_SET_score_avg = mean(SET_score_avg, na.rm = TRUE),
+      sd_SET_score_avg = sd(SET_score_avg, na.rm = TRUE),
+      min_percent_failed_cur = min(percent_failed_cur, na.rm = TRUE),
+      max_percent_failed_cur = max(percent_failed_cur, na.rm = TRUE),
+      mean_percent_failed_cur = mean(percent_failed_cur, na.rm = TRUE),
+      sd_percent_failed_cur = sd(percent_failed_cur, na.rm = TRUE)
+    ) 
+set.seed(1123)
+# simulate based on stats
+tibble(
+  teacher_id = sample(3422:110292, 500),
+  participants = runif(n = 500, min = 10, max = 1003),
+  resp_share = runif(n = 500, min = 0.003484321, max = 0.95),
+  SET_score_avg = rnorm(n = 500, mean = 4.37426, sd = 0.7844497),
+  percent_failed_cur = rnorm(n = 500, mean = 0.1289149, sd = 0.1494496)
+)
 
 ```
 
@@ -1516,12 +1913,13 @@ Challenge 3 Question 3
 ```{r}
 #| label: dsm-2-2
 
-tab <- table(
-  teacher_evals_compare$SET_level,
-  teacher_evals_compare$sen_level
-)
+# REVISIONS:
+# modified to better fit efficiency conventions
 
-chisq.test(tab)
+chisq.test(
+  x = teacher_evals_compare$SET_level,
+  y = teacher_evals_compare$sen_level
+  )
 
 ```
 
@@ -1529,14 +1927,100 @@ chisq.test(tab)
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
+Throughout the course, I had to constantly make adjustments to how I was approaching problems and how I was styling my work to make consistent professional documents. To fulfill some categories, I had to look back to older labs and challenges and bring in more recent learnings to make them better or to exemplify skills, which further enhanced my understanding of course materials. For example, I built off lab 2 and simulated rodent data based off of the given, creating a similar graph.
+
 <!-- For the revisions included in your Portfolio, to help me understand the nature of your revisions, please denote somehow the feedback I provided you (e.g., boldface, italics, colored text) before your revisions. -->
+
+Revisions are indicated by "REVISIONS:" followed by notes of what was changed between the original lab or challenges to the portfolio.
 
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
+I extended my thinking through challenge activities, assignments and in the creation of this portfolio. I attempted many challenge problems and in particular, I completed all of the Challenge 7 problems by creating robust functions with stop blocks to use to make a visually engaging graph.
+
 ## Peer Support & Collaboration
 
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
 
+Feedback:
+
+\`ggplot(data = surveys, \
+
+mapping = aes(x = weight,\
+
+y = hindfoot_length\
+
+)\
+
+) +\
+
+geom_point(alpha = 0.5) +\
+
+facet_wrap(\~species_id) +\
+
+labs(x = "Weight of Animal (in grams)",\
+
+y = "",\
+
+title = "Relationship Between Animal Body Weight and Hindfoot\
+
+Length Across Different Species", \
+
+subtitle = "Length of Hindfoot (in mm)"\
+
+)\
+
+\
+
+Overall, you did a great job with the formatting. I appreciate you using line spacing after the +’s and ,’s and great job using named variables everywhere. The only thing I would change is when having a newline after commas, I’d have the arguments aligned. For example:\
+
+… \
+
+mapping = aes(x = weight, \
+
+y = hindfoot_length\
+
+)\
+
+…\
+
+\
+
+And if you have multiple )’s in a row, I feel like it isn’t necessary to do a newline, but either way the tidiness is very good!\
+
+\
+
+ggplot(data = surveys, \
+
+mapping = aes(x = species_id, \
+
+y = weight\
+
+)\
+
+) + \
+
+geom_boxplot(outliers = FALSE) +\
+
+geom_jitter(\
+
+color = "orange", \
+
+alpha = 0.5\
+
+) +\
+
+labs(x = "Species", \
+
+y = "Weight of Animal (in grams)", \
+
+title = "Comparing Animal Weight Distributions Across Species")\
+
+\
+
+Overall, same thing as before! Great formatting both in tidiness and efficiency in the spacing, newlines and using name variables. I would just recommend putting the current y axis label as a subtitle and changing the y axis label to be “ “.\`
+
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
+
+At first it was a struggle to stay within roles because I'm always trying to think of ideas and solutions that I want to rush and try. But as the weeks went on, I learned to take a step back and let others speak first which often led to more creative solutions overall and expanded my depth of knowledge in the course.
