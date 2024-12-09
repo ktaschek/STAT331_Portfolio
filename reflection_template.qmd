@@ -1275,22 +1275,23 @@ fish_csv |>
 
 -   Example using `summarize()`
 
-Lab 7 Question 1
+Lab 3 Question 6
 
 ```{r}
 #| label: dvs-4-summarize
 
-# REVISIONS:
-# modified to resolve the "growing" changes requested:
-# 1. modified to output a table where each column has the number of missing values
+# REVISION:
+# modified to be more efficient, using the across function
 
-fish_csv |>
-  summarise(
-    across(
-      everything(),
-      ~ sum(is.na(.))
-    )
-  ) 
+teacher_evals_clean |>
+  summarise(across( 
+    .cols = c(
+      teacher_id,
+      course_id
+      ),
+    .fns = n_distinct,
+    .names = "unique_{.col}s"
+    ))
 
 ```
 
@@ -1669,10 +1670,39 @@ row_spec(1)
 
 -   `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
 
+Lab 3
+
 ```{r}
 #| label: pe-3-map-2
 
+# NEW:
+# Based on the above lab label
+# create a new variable using pmap_dbl()
 
+teacher_evals |>
+  rename(sex = gender) |>
+  select(
+    course_id,
+    teacher_id,
+    question_no,
+    no_participants,
+    resp_share,
+    SET_score_avg,
+    percent_failed_cur,
+    academic_degree,
+    seniority,
+    sex
+  ) |>
+  # refernce for pmap_dbl: https://purrr.tidyverse.org/reference/pmap.html
+  mutate(
+    adjusted_SET_score = pmap_dbl(
+      list(SET_score_avg, percent_failed_cur, no_participants),
+      ~ ifelse(..3 >= 10, ..1 * (1 - ..2 / 100), -1)
+    )
+  )|>
+  filter(
+    adjusted_SET_score != -1
+  )
 
 ```
 
